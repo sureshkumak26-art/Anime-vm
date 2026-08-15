@@ -5,6 +5,8 @@ datasource db { provider = "postgresql" url = env("DATABASE_URL") }
 enum Role { USER STAFF ADMIN }
 enum VPSStatus { PROVISIONING RUNNING STOPPED SUSPENDED ERROR }
 
+enum NodeStatus { ONLINE OFFLINE MAINTENANCE ERROR }
+
 model User {
   id String @id @default(cuid())
   email String @unique
@@ -35,9 +37,16 @@ model Node {
   port Int @default(8006)
   tokenId String
   tokenSecret String
+  status NodeStatus @default(OFFLINE)
   active Boolean @default(true)
+  priority Int @default(100)
+  maxVPS Int?
+  lastCheckedAt DateTime?
   vps VPS[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, status, priority])
 }
 
 model VPS {
@@ -56,4 +65,6 @@ model VPS {
   node Node @relation(fields: [nodeId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([nodeId])
 }
