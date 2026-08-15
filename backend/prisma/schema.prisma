@@ -1,0 +1,59 @@
+generator client { provider = "prisma-client-js" }
+
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+enum Role { USER STAFF ADMIN }
+enum VPSStatus { PROVISIONING RUNNING STOPPED SUSPENDED ERROR }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  passwordHash String
+  name String?
+  role Role @default(USER)
+  balance Decimal @default(0)
+  vps VPS[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Plan {
+  id String @id @default(cuid())
+  name String @unique
+  ramMB Int
+  cpuCores Int
+  diskGB Int
+  price Decimal
+  active Boolean @default(true)
+  vps VPS[]
+}
+
+model Node {
+  id String @id @default(cuid())
+  name String @unique
+  host String
+  port Int @default(8006)
+  tokenId String
+  tokenSecret String
+  active Boolean @default(true)
+  vps VPS[]
+  createdAt DateTime @default(now())
+}
+
+model VPS {
+  id String @id @default(cuid())
+  userId String
+  planId String
+  nodeId String
+  vmid Int @unique
+  name String
+  hostname String?
+  ipv4 String?
+  os String?
+  status VPSStatus @default(PROVISIONING)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan Plan @relation(fields: [planId], references: [id])
+  node Node @relation(fields: [nodeId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
