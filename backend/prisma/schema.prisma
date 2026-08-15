@@ -4,7 +4,6 @@ datasource db { provider = "postgresql" url = env("DATABASE_URL") }
 
 enum Role { USER STAFF ADMIN }
 enum VPSStatus { PROVISIONING RUNNING STOPPED SUSPENDED ERROR }
-
 enum NodeStatus { ONLINE OFFLINE MAINTENANCE ERROR }
 
 model User {
@@ -33,6 +32,7 @@ model Plan {
 model Node {
   id String @id @default(cuid())
   name String @unique
+  proxmoxNodeName String?
   host String
   port Int @default(8006)
   tokenId String
